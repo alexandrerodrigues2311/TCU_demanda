@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard TCU SAR/ANM</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Material Symbols (Ícones) -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel (Para compilar o React diretamente no ficheiro HTML) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      background-color: #F5F5F7;
+    }
+    .material-symbols-outlined { 
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+    }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const risksData = [
+      {
+        id: 'R12', prob: 4, imp: 5, score: 20, level: 'Crítico', icon: 'database',
+        title: 'Medição, Balanço e Rastreabilidade',
+        description: 'Esse é o risco de maior aderência à SAR. Cadeias de terras raras podem envolver maior complexidade na medição, no balanço de massa, na classificação do produto e na rastreabilidade física e comercial, inclusive em operações voltadas à exportação.',
+        impact: 'Pode resultar em subdeclaração de produção, subavaliação de receitas, evasão de divisas, distorções concorrenciais e perdas arrecadatórias relevantes, além de comprometer a confiabilidade dos dados utilizados para fiscalização e inteligência arrecadatória.'
+      },
+      {
+        id: 'R32', prob: 4, imp: 5, score: 20, level: 'Crítico', icon: 'insights',
+        title: 'Estratégia Integrada de Dados',
+        description: 'Risco central para a SAR. A fragmentação de bases, conceitos, indicadores e fluxos informacionais entre instituições tende a ocorrer com maior intensidade em cadeias minerais emergentes e mais complexas.',
+        impact: 'A ausência de estratégia integrada de dados compromete diretamente a inteligência arrecadatória, o cruzamento de informações, a construção de trilhas de auditoria, a priorização de fiscalizações e a transparência necessária ao monitoramento da cadeia.'
+      },
+      {
+        id: 'R01', prob: 4, imp: 4, score: 16, level: 'Alto', icon: 'account_balance',
+        title: 'Restrições Orçamentárias e de Infraestrutura',
+        description: 'A fiscalização de receitas em cadeias complexas exige capacidade técnica especializada, estrutura analítica, sistemas de informação e atuação contínua sobre dados declaratórios, comerciais e produtivos. Restrições reduzem a profundidade e tempestividade.',
+        impact: 'Enfraquecimento da capacidade institucional compromete a prevenção de perdas arrecadatórias, a detecção de inconsistências e a resposta fiscalizatória em empreendimentos de maior sensibilidade.'
+      },
+      {
+        id: 'R02', prob: 4, imp: 4, score: 16, level: 'Alto', icon: 'group',
+        title: 'Insuficiência de Equipes Orgânicas',
+        description: 'A atuação sobre receitas associadas a minerais críticos demanda conhecimento técnico permanente em apuração de valor, preços, classificação, fluxos e rastreabilidade.',
+        impact: 'A fragilidade técnica reduz a capacidade da SAR de qualificar análises, sustentar fiscalizações, uniformizar entendimentos e preservar memória institucional em matéria sensível.'
+      },
+      {
+        id: 'R14', prob: 4, imp: 4, score: 16, level: 'Alto', icon: 'gpp_maybe',
+        title: 'Descontinuidade de Governança',
+        description: 'A ausência de instância estável de governança favorece descontinuidade de diretrizes, fragmentação de prioridades e baixa coordenação entre órgãos e áreas.',
+        impact: 'A arrecadação e a fiscalização dependem de ambiente institucional minimamente coerente, com papéis definidos, fluxo de informações e estabilidade normativa para orientar ações de controle.'
+      },
+      {
+        id: 'R15', prob: 4, imp: 4, score: 16, level: 'Alto', icon: 'balance',
+        title: 'Conflitos Normativos e Regulatórios',
+        description: 'A cadeia envolve interfaces regulatórias, ambientais, nucleares, econômicas e de comércio exterior, o que pode gerar conflitos interpretativos e decisões desarticuladas.',
+        impact: 'Dificultam o controle arrecadatório, prejudicam a segurança jurídica das exigências fiscalizatórias, reduzem a qualidade da informação e criam zonas de incerteza.'
+      },
+      {
+        id: 'R13', prob: 4, imp: 3, score: 12, level: 'Alto', icon: 'description',
+        title: 'Exportação de Baixo Valor Agregado',
+        description: 'Na ausência de ambiente regulatório e econômico claro, tende a prevalecer a exportação de produtos de menor processamento.',
+        impact: 'Reduz a densidade econômica da cadeia no país, limita a sofisticação dos fluxos formais monitoráveis e restringe o potencial arrecadatório.'
+      },
+      {
+        id: 'R30', prob: 4, imp: 3, score: 12, level: 'Alto', icon: 'warning',
+        title: 'Desarticulação e Dispersão Institucional',
+        description: 'Sem coordenação clara e prioridades definidas, tende a haver dispersão institucional e baixa integração entre as frentes que estruturam a cadeia de terras raras.',
+        impact: 'Compromete a construção de referenciais estáveis, dificulta a consolidação de informações úteis para fiscalização e reduz a previsibilidade arrecadatória.'
+      },
+      {
+        id: 'R09', prob: 3, imp: 3, score: 9, level: 'Médio', icon: 'info',
+        title: 'Atrasos em Licenciamento e Outorga',
+        description: 'Atrasos, suspensões ou judicializações afetam a previsibilidade dos empreendimentos e o horizonte de entrada de produção regular.',
+        impact: 'O principal reflexo recai sobre a formação e estabilidade da base futura de arrecadação, mais do que sobre a fiscalização imediata.'
+      },
+      {
+        id: 'R11', prob: 3, imp: 3, score: 9, level: 'Médio', icon: 'info',
+        title: 'Retenção Prolongada de Áreas',
+        description: 'A retenção de áreas promissoras sem avanço efetivo em pesquisa ou produção pode postergar a maturação de projetos com potencial arrecadatório.',
+        impact: 'Afeta sobretudo a expansão da base futura de arrecadação e a previsibilidade do ciclo produtivo.'
+      },
+      {
+        id: 'R23', prob: 3, imp: 3, score: 9, level: 'Médio', icon: 'info',
+        title: 'Dificuldade de Financiamento',
+        description: 'Baixa previsibilidade regulatória e ausência de instrumentos adequados de financiamento dificultam a bancabilidade de projetos.',
+        impact: 'Postergação ou redução do número de projetos capazes de gerar produção estável e, consequentemente, arrecadação futura.'
+      },
+      {
+        id: 'R28', prob: 3, imp: 3, score: 9, level: 'Médio', icon: 'info',
+        title: 'Falta de Harmonização de Métricas',
+        description: 'Falta de harmonização metodológica na consolidação de dados minerais pode gerar leituras divergentes sobre reservas e materialidade econômica.',
+        impact: 'Enfraquece a qualidade dos diagnósticos setoriais, dificulta a priorização fiscalizatória e reduz a robustez de análises de risco.'
+      },
+      {
+        id: 'R29', prob: 3, imp: 3, score: 9, level: 'Médio', icon: 'info',
+        title: 'Demora na Tramitação de Atos',
+        description: 'Demora na disponibilização de áreas e tramitação de atos afeta a previsibilidade da entrada em operação dos empreendimentos.',
+        impact: 'O reflexo principal ocorre sobre a formação da base arrecadatória futura e planejamento de acompanhamento setorial.'
+      },
+      {
+        id: 'R34', prob: 3, imp: 3, score: 9, level: 'Médio', icon: 'info',
+        title: 'Alocação Desarticulada de Investimentos',
+        description: 'Investimentos sem diretrizes nacionais claras podem ocorrer antes do amadurecimento de uma política para minerais críticos.',
+        impact: 'Reduz a previsibilidade da consolidação da cadeia produtiva, dificultando a leitura sobre expansão de produção, formalização e arrecadação.'
+      }
+    ];
+
+    const sortedRisksData = [...risksData].sort((a, b) => a.id.localeCompare(b.id));
+
+    const RiskHeatmap = ({ data }) => {
+      const getCellColor = (prob, imp) => {
+        const score = prob * imp;
+        if (score >= 16) return 'bg-red-50 border-red-200';
+        if (score >= 12) return 'bg-amber-50 border-amber-200';
+        if (score >= 9) return 'bg-blue-50 border-blue-200';
+        return 'bg-gray-50 border-gray-100';
+      };
+
+      return (
+        <div className="flex flex-col items-center w-full max-w-3xl mx-auto overflow-x-auto py-4">
+          <div className="flex">
+            <div className="flex items-center justify-center text-xs font-bold tracking-widest text-gray-400 uppercase w-8" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+              Probabilidade
+            </div>
+            <div className="grid grid-cols-[auto_repeat(5,1fr)] gap-2">
+              {[5, 4, 3, 2, 1].map(p => (
+                <React.Fragment key={`row-${p}`}>
+                  <div className="flex items-center justify-end font-semibold text-gray-400 pr-2 text-sm w-6">
+                    {p}
+                  </div>
+                  {[1, 2, 3, 4, 5].map(i => {
+                    const cellRisks = data.filter(r => r.prob === p && r.imp === i);
+                    return (
+                      <div
+                        key={`cell-${p}-${i}`}
+                        className={`w-16 h-16 sm:w-24 sm:h-24 p-1 sm:p-2 border rounded-xl flex flex-wrap gap-1 content-start overflow-y-auto scrollbar-hide ${getCellColor(p, i)}`}
+                      >
+                        {cellRisks.map(r => (
+                          <span key={r.id} className="text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded bg-white shadow-sm border border-black/5 text-gray-700 cursor-default" title={r.title}>
+                            {r.id}
+                          </span>
+                        ))}
+                      </div>
+                    )
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+          <div className="flex ml-14 w-full max-w-[20rem] sm:max-w-[30rem] justify-around mt-2 pl-4">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={`hx-${i}`} className="text-center font-semibold text-gray-400 text-sm w-16 sm:w-24">
+                {i}
+              </div>
+            ))}
+          </div>
+          <div className="text-xs font-bold tracking-widest text-gray-400 uppercase mt-2 ml-14">
+            Impacto
+          </div>
+        </div>
+      );
+    };
+
+    function App() {
+      const [filter, setFilter] = useState('Todos');
+      const [viewMode, setViewMode] = useState('grid');
+
+      const filteredRisks = filter === 'Todos' 
+        ? sortedRisksData 
+        : sortedRisksData.filter(r => r.level === filter);
+
+      const getBadgeStyle = (level) => {
+        switch(level) {
+          case 'Crítico': return 'bg-red-100 text-red-700 border-red-200';
+          case 'Alto': return 'bg-amber-100 text-amber-700 border-amber-200';
+          case 'Médio': return 'bg-blue-50 text-blue-700 border-blue-200';
+          default: return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+      };
+
+      const getIconStyle = (level) => {
+        switch(level) {
+          case 'Crítico': return 'text-red-500 bg-red-50';
+          case 'Alto': return 'text-amber-500 bg-amber-50';
+          case 'Médio': return 'text-blue-500 bg-blue-50';
+          default: return 'text-gray-500 bg-gray-50';
+        }
+      };
+
+      return (
+        <div className="min-h-screen text-gray-900 selection:bg-blue-200">
+          
+          {/* Header / Navbar */}
+          <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-4">
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/f/ff/LogoANM.jpg" 
+                  alt="ANM Logo" 
+                  className="h-12 object-contain"
+                />
+                <div className="h-10 w-px bg-gray-300 hidden sm:block"></div>
+                <div>
+                  <h1 className="text-xl font-semibold tracking-tight text-gray-900">Painel de Análise de Riscos</h1>
+                  <p className="text-sm text-gray-500 font-medium">Processo TCU: 024.160/2025-3 • Terras Raras</p>
+                </div>
+              </div>
+              <div className="px-4 py-2 bg-[#003399]/5 border border-[#003399]/10 rounded-full flex items-center gap-2">
+                 <span className="material-symbols-outlined text-[#003399] text-base">gpp_maybe</span>
+                 <span className="text-sm font-semibold text-[#003399]">Visão SAR / Fiscalização</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+            
+            {/* Executive Summary */}
+            <section className="bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#009933]/10 to-[#FFCC00]/10 blur-3xl rounded-full -mr-20 -mt-20"></div>
+              
+              <div className="relative z-10 max-w-4xl">
+                <h2 className="text-2xl font-bold tracking-tight mb-4 text-gray-900">Síntese da Posição da SAR</h2>
+                <p className="text-lg text-gray-600 leading-relaxed mb-6">
+                  Sob a perspectiva da Superintendência de Arrecadação e Fiscalização de Receitas (SAR), os riscos mais sensíveis são <strong className="text-red-600">R12</strong> e <strong className="text-red-600">R32</strong>, ambos com classificação <strong className="text-gray-900">crítica</strong>, porque incidem diretamente sobre rastreabilidade, integridade da informação, capacidade de cruzamento de dados, fiscalização de receitas e proteção da arrecadação mineral.
+                </p>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Em um segundo nível de relevância, aparecem R01, R02, R14 e R15, com risco <strong className="text-amber-600">alto</strong>, por afetarem a capacidade institucional, a consistência técnica e a coordenação necessária. Os demais riscos possuem interface mais indireta, influenciando a formação, previsibilidade e robustez da base arrecadatória futura.
+                </p>
+              </div>
+            </section>
+
+            {/* Heatmap Section */}
+            <section className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold tracking-tight text-gray-900">Mapa de Calor</h2>
+                <p className="text-sm text-gray-500 mt-1">Distribuição dos riscos mapeados segundo sua probabilidade e impacto.</p>
+              </div>
+              <RiskHeatmap data={sortedRisksData} />
+            </section>
+
+            {/* Filters and View Toggles */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide w-full sm:w-auto">
+                <span className="text-sm font-medium text-gray-500 uppercase tracking-wider mr-2">Filtros:</span>
+                {['Todos', 'Crítico', 'Alto', 'Médio'].map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setFilter(level)}
+                    className={`shrink-0 px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                      filter === level 
+                        ? 'bg-gray-900 text-white shadow-md' 
+                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex bg-gray-100 p-1 rounded-xl shrink-0">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'grid' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <span className="material-symbols-outlined text-base">grid_view</span> Cards
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${viewMode === 'table' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  <span className="material-symbols-outlined text-base">list</span> Tabela
+                </button>
+              </div>
+            </div>
+
+            {/* Data Display: Grid or Table */}
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredRisks.map((risk) => (
+                  <div 
+                    key={risk.id} 
+                    className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={`p-3 rounded-2xl ${getIconStyle(risk.level)} flex items-center justify-center`}>
+                        <span className="material-symbols-outlined">{risk.icon}</span>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`px-3 py-1 text-xs font-bold rounded-full border ${getBadgeStyle(risk.level)}`}>
+                          {risk.level.toUpperCase()}
+                        </span>
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-lg">
+                          <span>P: {risk.prob}</span>
+                          <span className="text-gray-300">|</span>
+                          <span>I: {risk.imp}</span>
+                          <span className="text-gray-300">|</span>
+                          <span className="text-gray-900">Escore: {risk.score}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-2">
+                      <span className="text-xs font-bold text-gray-400 tracking-wider">RISCO {risk.id}</span>
+                      <h3 className="text-lg font-bold text-gray-900 leading-tight mt-1">{risk.title}</h3>
+                    </div>
+                    
+                    <div className="flex-1 mt-4 space-y-4">
+                      <div>
+                        <p className="text-sm text-gray-600 font-medium mb-1">Cenário / Probabilidade</p>
+                        <p className="text-sm text-gray-500 leading-relaxed">{risk.description}</p>
+                      </div>
+                      <div className="bg-gray-50/80 p-4 rounded-2xl border border-gray-100">
+                        <p className="text-sm text-gray-700 font-semibold mb-1 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[#009933] text-base">chevron_right</span> Impacto na SAR
+                        </p>
+                        <p className="text-sm text-gray-600 leading-relaxed">{risk.impact}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100">
+                        <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Risco</th>
+                        <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Descrição / Título</th>
+                        <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Nível</th>
+                        <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">P × I</th>
+                        <th className="px-6 py-5 text-xs font-bold text-gray-500 uppercase tracking-wider">Justificativa (Visão SAR)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {filteredRisks.map((risk) => (
+                        <tr key={risk.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-5 whitespace-nowrap align-top">
+                            <span className="text-sm font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded-md">{risk.id}</span>
+                          </td>
+                          <td className="px-6 py-5 align-top">
+                            <div className="text-sm font-bold text-gray-900 mb-1">{risk.title}</div>
+                            <div className="text-xs text-gray-500 line-clamp-2" title={risk.description}>{risk.description}</div>
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap align-top text-center">
+                            <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full border ${getBadgeStyle(risk.level)}`}>
+                              {risk.level.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 align-top text-center">
+                            <span className="bg-gray-50 border border-gray-200 px-2 py-1 rounded-lg shadow-sm">
+                              {risk.prob} × {risk.imp}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 align-top min-w-[300px]">
+                            <p className="text-sm text-gray-600 leading-relaxed">{risk.impact}</p>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* Discreet Institutional Caveat / Footer */}
+          <footer className="mt-12 border-t border-gray-200 bg-white">
+            <div className="max-w-7xl mx-auto px-6 py-12">
+              <div className="bg-gray-50 rounded-3xl p-8 border border-gray-100 flex flex-col md:flex-row gap-8 items-start">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 shrink-0">
+                  <span className="material-symbols-outlined text-gray-400 text-3xl">lock</span>
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold tracking-widest text-gray-400 uppercase mb-2">Análise Técnica e Ressalva Institucional</h4>
+                  <p className="text-base text-gray-600 leading-relaxed italic mb-4">
+                    "A SAR registra que sua avaliação foi realizada no limite de suas competências regimentais, com foco nos reflexos dos riscos sobre arrecadação, fiscalização, rastreabilidade econômico-fiscal, integridade declaratória e inteligência arrecadatória, sem prejuízo de que os aspectos predominantemente geológicos, ambientais, tecnológicos, nucleares, de outorga ou de política industrial sejam avaliados pelas áreas finalísticas competentes."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#003399] to-[#009933] flex items-center justify-center text-white font-bold text-xs">
+                      AR
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">Alexandre Rodrigues</p>
+                      <p className="text-xs text-gray-500">Superintendência de Arrecadação e Fiscalização de Receitas (SAR)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 text-center text-xs text-gray-400">
+                &copy; {new Date().getFullYear()} Agência Nacional de Mineração. Documento de uso interno/institucional.
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
